@@ -1,0 +1,142 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.incandescent</groupId>
+        <artifactId>kuali-base</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <groupId>com.incandescent</groupId>
+    <artifactId>kfs-war</artifactId>
+    <packaging>war</packaging>
+    <name>KFS war</name>
+    <version>3.0.1-0-SNAPSHOT</version>
+    <description>This project wraps the KFS war with a war overlay.</description>
+    <url>http://incandescentsoftware.com/kuali</url>
+    <inceptionYear>2011</inceptionYear>
+    <organization>
+        <name>Incandescent Software</name>
+        <url>http://incandescentsoftware.com</url>
+    </organization>
+
+    <properties>
+        <kfs.ver>3.0.1-0-SNAPSHOT</kfs.ver>
+        <rice.core.ver>1.0.1.1-0-SNAPSHOT</rice.core.ver>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <!-- default value contains jpg,jpeg,gif,bmp,png -->
+                        <nonFilteredFileExtension>jar</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>class</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>tld</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>jsp</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>tag</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                    <overlays>
+                        <overlay>
+                            <groupId>com.incandescent</groupId>
+                            <artifactId>kfs-generic-war</artifactId>
+                            <filtered>false</filtered>
+
+                            <!-- Exclude libraries in KFS which are older than versions pulled
+                                 in from Rice/Maven, or which have different file names -->
+                            <excludes>
+                                <!-- beanutils 1.7.0 file name difference -->
+                                <exclude>WEB-INF/lib/commons-beanutils-*.jar</exclude>
+                                <!-- Rice pulls same versions in under different file names -->
+                                <exclude>WEB-INF/lib/taglibs-jstl*.jar</exclude>
+                                <exclude>WEB-INF/lib/taglibs-standard*.jar</exclude>
+                                <exclude>WEB-INF/lib/xpp3_min-*.jar</exclude>
+                                
+                                <exclude>WEB-INF/lib/db-ojb-*.jar</exclude> <!-- kfs includes a "db-ojb-1.0.4-kuali-mods-debug.jar" ? -->
+                                
+                                <!-- Rice has newer versions of these dependencies -->
+                                <exclude>WEB-INF/lib/activation-*.jar</exclude>
+                                <exclude>WEB-INF/lib/commons-lang*.jar</exclude>
+                                <exclude>WEB-INF/lib/commons-pool*.jar</exclude>
+                                <exclude>WEB-INF/lib/jaxb-xjc-*.jar</exclude>
+                                <exclude>WEB-INF/lib/oscache-*.jar</exclude>
+                                <exclude>WEB-INF/lib/spring-2.0*.jar</exclude>
+                                <exclude>WEB-INF/lib/xalan-2.7*.jar</exclude>
+                                <!-- we pull in a newer version -->
+                                <exclude>WEB-INF/lib/xercesImpl-*.jar</exclude>
+                                <exclude>WEB-INF/lib/xml-apis-*.jar</exclude>
+                            </excludes>
+                        </overlay>
+                    </overlays>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.incandescent</groupId>
+            <artifactId>kfs-generic-war</artifactId>
+            <version>${kfs.ver}</version>
+            <type>war</type>
+        </dependency>
+
+        <!-- provided only for compilation of code in this project -->
+        <dependency>
+            <groupId>com.incandescent</groupId>
+            <artifactId>kfs-lib</artifactId>
+            <version>${kfs.ver}</version>
+            <!-- this is "provided" by the KFS war, don't include all the classes twice!
+                 (if KFS was mavenized then perhaps its war artifact would pull in a jar artifact like this)
+            -->
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.incandescent</groupId>
+            <artifactId>rice-core</artifactId>
+            <version>${rice.core.ver}</version>
+            <!-- exclude libraries for which KFS war has newer version -->
+            <!-- TODO: for libs which are newer in KFS, update upstream rice-core or kuali-core pom -->
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-digester</groupId>
+                    <artifactId>commons-digester</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jaxen</groupId>
+                    <artifactId>jaxen</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>dwr</groupId>
+                    <artifactId>dwr</artifactId>
+                </exclusion>
+                
+                <!-- do not need these compile deps in the war -->
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>htmlunit</groupId>
+                    <artifactId>htmlunit</artifactId>
+                </exclusion>
+                
+                <!-- pulled in by Rice impl, however we cannot
+                     distribute this.  customize as necessary -->
+                <exclusion>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>ojdbc14</artifactId>
+                </exclusion>
+                <!-- we could probably technically distribute this
+                     but just play it safe here -->
+                <exclusion>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+    </dependencies>
+</project>
